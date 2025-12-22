@@ -316,7 +316,7 @@ watch(
           :options="formOptions"
         />
       </FormItem>
-      <FormItem label="业务标识">
+      <!-- <FormItem label="业务标识">
         <Select
           v-model:value="businessKey"
           @change="_updateElementBusinessKey"
@@ -327,7 +327,7 @@ watch(
           </Select.Option>
           <Select.Option value="">无</Select.Option>
         </Select>
-      </FormItem>
+      </FormItem> -->
     </Form>
 
     <!--字段列表-->

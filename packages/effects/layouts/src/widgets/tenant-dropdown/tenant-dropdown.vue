@@ -2,15 +2,12 @@
 import { computed } from 'vue';
 
 import { IconifyIcon } from '@vben/icons';
-import { $t } from '@vben/locales';
 
 import {
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuTrigger,
 } from '@vben-core/shadcn-ui';
 
 interface Tenant {
@@ -50,7 +47,7 @@ async function handleChange(id: number | undefined) {
 </script>
 <template>
   <DropdownMenu>
-    <DropdownMenuTrigger>
+    <!-- <DropdownMenuTrigger>
       <Button
         variant="outline"
         class="hover:bg-accent ml-1 mr-2 h-8 w-32 cursor-pointer rounded-full p-1.5"
@@ -61,7 +58,7 @@ async function handleChange(id: number | undefined) {
           $t('page.tenant.placeholder')
         }}
       </Button>
-    </DropdownMenuTrigger>
+    </DropdownMenuTrigger> -->
     <DropdownMenuContent class="w-40 p-0 pb-1">
       <DropdownMenuGroup>
         <DropdownMenuItem
