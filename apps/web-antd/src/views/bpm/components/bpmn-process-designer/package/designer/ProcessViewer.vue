@@ -8,6 +8,7 @@ import { formatDate, formatPast2 } from '@vben/utils';
 import { Button, ButtonGroup, Modal, Row, Table } from 'ant-design-vue';
 import BpmnViewer from 'bpmn-js/lib/Viewer';
 import MoveCanvasModule from 'diagram-js/lib/navigation/movecanvas';
+import TouchModule from 'diagram-js/lib/navigation/touch';
 
 import { DictTag } from '#/components/dict-tag';
 
@@ -138,7 +139,7 @@ const importXML = async (xml: string) => {
   if (xml !== null && xml !== '') {
     try {
       bpmnViewer.value = new BpmnViewer({
-        additionalModules: [MoveCanvasModule],
+        additionalModules: [MoveCanvasModule, TouchModule],
         container: processCanvas.value,
       });
       // 增加点击事件
@@ -266,7 +267,11 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="process-viewer">
-    <div style="height: 100%" ref="processCanvas" v-show="!isLoading"></div>
+    <div
+      class="process-viewer__canvas"
+      ref="processCanvas"
+      v-show="!isLoading"
+    ></div>
     <!-- 自定义箭头样式，用于已完成状态下流程连线箭头 -->
     <defs ref="customDefs">
       <marker
@@ -415,3 +420,10 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.process-viewer__canvas {
+  height: 100%;
+  touch-action: none;
+}
+</style>
