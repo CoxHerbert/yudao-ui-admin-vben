@@ -78,6 +78,15 @@ const zoomToFitForMobile = () => {
   const canvas = bpmnViewer.value.get('canvas');
   canvas?.zoom('fit-viewport', 'auto');
   defaultZoom.value = canvas?.zoom() || 1;
+
+  const viewbox = canvas?.viewbox();
+  if (viewbox) {
+    const center = {
+      x: viewbox.x + viewbox.width / 2,
+      y: viewbox.y + viewbox.height / 2,
+    };
+    canvas?.zoom(defaultZoom.value, center);
+  }
 };
 
 /** 流程图预览清空 */
@@ -94,7 +103,7 @@ const clearViewer = () => {
 const detectMobileView = () => {
   if (typeof window === 'undefined') return false;
 
-  return window.innerWidth < 768;
+  return window.innerWidth < 750;
 };
 
 /** 添加自定义箭头 */
