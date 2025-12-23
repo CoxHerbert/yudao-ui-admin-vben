@@ -8,6 +8,7 @@ import { formatDate, formatPast2 } from '@vben/utils';
 import { Button, ButtonGroup, Modal, Row, Table } from 'ant-design-vue';
 import BpmnViewer from 'bpmn-js/lib/Viewer';
 import MoveCanvasModule from 'diagram-js/lib/navigation/movecanvas';
+import TouchModule from 'diagram-js/lib/navigation/touch';
 
 import { DictTag } from '#/components/dict-tag';
 
@@ -30,6 +31,7 @@ const bpmnViewer = ref<any | BpmnViewer>(null);
 const customDefs = ref();
 const defaultZoom = ref(1); // 默认缩放比例
 const isLoading = ref(false); // 是否加载中
+const isMobileView = ref(false); // 是否为移动端视图
 
 const processInstance = ref<any>({}); // 流程实例
 const tasks = ref([]); // 流程任务
@@ -69,6 +71,24 @@ const processZoomOut = (zoomStep = 0.1) => {
   bpmnViewer.value?.get('canvas').zoom(defaultZoom.value);
 };
 
+/** 移动端适配：居中并自适应缩放 */
+const zoomToFitForMobile = () => {
+  if (!isMobileView.value || !bpmnViewer.value) return;
+
+  const canvas = bpmnViewer.value.get('canvas');
+  canvas?.zoom('fit-viewport', 'auto');
+  defaultZoom.value = canvas?.zoom() || 1;
+
+  const viewbox = canvas?.viewbox();
+  if (viewbox) {
+    const center = {
+      x: viewbox.x + viewbox.width / 2,
+      y: viewbox.y + viewbox.height / 2,
+    };
+    canvas?.zoom(defaultZoom.value, center);
+  }
+};
+
 /** 流程图预览清空 */
 const clearViewer = () => {
   if (processCanvas.value) {
@@ -78,6 +98,12 @@ const clearViewer = () => {
     bpmnViewer.value.destroy();
   }
   bpmnViewer.value = null;
+};
+
+const detectMobileView = () => {
+  if (typeof window === 'undefined') return false;
+
+  return window.innerWidth < 750;
 };
 
 /** 添加自定义箭头 */
@@ -138,7 +164,7 @@ const importXML = async (xml: string) => {
   if (xml !== null && xml !== '') {
     try {
       bpmnViewer.value = new BpmnViewer({
-        additionalModules: [MoveCanvasModule],
+        additionalModules: [MoveCanvasModule, TouchModule],
         container: processCanvas.value,
       });
       // 增加点击事件
@@ -151,6 +177,7 @@ const importXML = async (xml: string) => {
       await bpmnViewer.value.importXML(xml);
       // 自定义成功的箭头
       addCustomDefs();
+      zoomToFitForMobile();
     } catch {
       clearViewer();
     } finally {
@@ -254,6 +281,7 @@ watch(
 
 /** mounted：初始化 */
 onMounted(() => {
+  isMobileView.value = detectMobileView();
   importXML(props.xml);
   setProcessStatus(props.view);
 });
@@ -266,7 +294,11 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="process-viewer">
-    <div style="height: 100%" ref="processCanvas" v-show="!isLoading"></div>
+    <div
+      class="process-viewer__canvas"
+      ref="processCanvas"
+      v-show="!isLoading"
+    ></div>
     <!-- 自定义箭头样式，用于已完成状态下流程连线箭头 -->
     <defs ref="customDefs">
       <marker
@@ -415,3 +447,10 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.process-viewer__canvas {
+  height: 100%;
+  touch-action: none;
+}
+</style>
