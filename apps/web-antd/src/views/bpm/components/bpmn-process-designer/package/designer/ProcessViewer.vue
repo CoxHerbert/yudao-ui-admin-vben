@@ -31,6 +31,7 @@ const bpmnViewer = ref<any | BpmnViewer>(null);
 const customDefs = ref();
 const defaultZoom = ref(1); // 默认缩放比例
 const isLoading = ref(false); // 是否加载中
+const isMobileView = ref(false); // 是否为移动端视图
 
 const processInstance = ref<any>({}); // 流程实例
 const tasks = ref([]); // 流程任务
@@ -70,6 +71,15 @@ const processZoomOut = (zoomStep = 0.1) => {
   bpmnViewer.value?.get('canvas').zoom(defaultZoom.value);
 };
 
+/** 移动端适配：居中并自适应缩放 */
+const zoomToFitForMobile = () => {
+  if (!isMobileView.value || !bpmnViewer.value) return;
+
+  const canvas = bpmnViewer.value.get('canvas');
+  canvas?.zoom('fit-viewport', 'auto');
+  defaultZoom.value = canvas?.zoom() || 1;
+};
+
 /** 流程图预览清空 */
 const clearViewer = () => {
   if (processCanvas.value) {
@@ -79,6 +89,12 @@ const clearViewer = () => {
     bpmnViewer.value.destroy();
   }
   bpmnViewer.value = null;
+};
+
+const detectMobileView = () => {
+  if (typeof window === 'undefined') return false;
+
+  return window.innerWidth < 768;
 };
 
 /** 添加自定义箭头 */
@@ -152,6 +168,7 @@ const importXML = async (xml: string) => {
       await bpmnViewer.value.importXML(xml);
       // 自定义成功的箭头
       addCustomDefs();
+      zoomToFitForMobile();
     } catch {
       clearViewer();
     } finally {
@@ -255,6 +272,7 @@ watch(
 
 /** mounted：初始化 */
 onMounted(() => {
+  isMobileView.value = detectMobileView();
   importXML(props.xml);
   setProcessStatus(props.view);
 });
